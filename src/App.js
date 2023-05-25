@@ -1,25 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import ChatPage from "./components/ChatPage/ChatPage.js";
+import LoginPage from "./components/LoginPage/LoginPage.js";
+import RegisterPage from "./components/RegisterPage/RegisterPage.js";
+import { auth } from "./firebase.js";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "./redux/actions/userAction.js";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isLoading = useSelector((state) => state.user.isLoading);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate("/");
+        dispatch(setUser(user));
+      } else {
+        navigate("/login");
+      }
+    });
+  }, []);
+
+  if (isLoading) {
+    return <div>...loading</div>;
+  } else {
+    return (
+      <Routes>
+        <Route path="/" element={<ChatPage />}></Route>
+        <Route path="/login" element={<LoginPage />}></Route>
+        <Route path="/register" element={<RegisterPage />}></Route>
+      </Routes>
+    );
+  }
 }
 
 export default App;
