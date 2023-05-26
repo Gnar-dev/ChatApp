@@ -111,6 +111,7 @@ const StHeader = styled.h2`
   display: flex;
   justify-content: center;
   gap: 1rem;
+  margin-bottom: 2rem;
 `;
 const StHeaderDiv = styled.div`
   color: black;
