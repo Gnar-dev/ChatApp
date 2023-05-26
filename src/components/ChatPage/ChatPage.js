@@ -21,6 +21,7 @@ const StChatPageContainer = styled.div`
   display: flex;
   justify-content: center;
   height: 100vh;
+  overflow: hidden;
 `;
 
 const StSidePanelContainer = styled.div`
@@ -28,4 +29,5 @@ const StSidePanelContainer = styled.div`
 `;
 const StMainPanelContainer = styled.div`
   width: 100%;
+  overflow: hidden;
 `;

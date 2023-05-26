@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
@@ -16,6 +16,8 @@ import {
   update,
   child,
 } from "firebase/database";
+import { setCurrentChatRoom } from "../../../redux/actions/chatRoomAction";
+import { auth } from "../../../firebase";
 
 const ChatRooms = () => {
   //리덕스 이용
@@ -40,6 +42,16 @@ const ChatRooms = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  useEffect(() => {
+    addChatRoomsListeners();
+    return () => {
+      off(chatRoomsRef);
+    };
+  }, []);
+  useEffect(() => {
+    loadLastChatRoom();
+  }, [chatRooms]);
 
   const handleCreateChatRoom = (e) => {
     e.preventDefault();
@@ -69,6 +81,50 @@ const ChatRooms = () => {
     }
   };
 
+  const addChatRoomsListeners = () => {
+    let chatRoomsArray = [];
+
+    onChildAdded(chatRoomsRef, (dataSnapshot) => {
+      chatRoomsArray.push(dataSnapshot.val());
+      setChatRooms(chatRoomsArray);
+      // addNotificationListener(dataSnapshot.key);
+    });
+  };
+
+  const loadLastChatRoom = () => {
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+      const userRef = dbRef(getDatabase(), `users/${userId}`);
+      onValue(userRef, (snapshot) => {
+        const lastChatRoomId = snapshot.val()?.lastChatRoomId;
+        const lastChatRoom = chatRooms.find(
+          (room) => room.id === lastChatRoomId
+        );
+
+        if (lastChatRoom) {
+          dispatch(setCurrentChatRoom(lastChatRoom));
+          setActiveChatRoomId(lastChatRoom.id);
+          setFirstLoad(false);
+        } else if (chatRooms.length > 0) {
+          const firstChatRoom = chatRooms[0];
+          dispatch(setCurrentChatRoom(firstChatRoom));
+          setActiveChatRoomId(firstChatRoom.id);
+          setFirstLoad(false);
+        }
+      });
+    }
+  };
+
+  const changeChatRoom = (room) => {
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+      const userRef = dbRef(getDatabase(), `users/${userId}`);
+      update(userRef, { lastChatRoomId: room.id });
+    }
+    dispatch(setCurrentChatRoom(room));
+    setActiveChatRoomId(room.id);
+  };
+
   return (
     <StChatRoomContainer>
       <StChatRoomInner>
@@ -79,6 +135,23 @@ const ChatRooms = () => {
           onClick={handleShow}
         />
       </StChatRoomInner>
+      <StChatRoomUL>
+        {chatRooms?.map((room) => (
+          <StChatRoomList
+            key={room.id}
+            active={room.id === activeChatRoomId ? "true" : undefined}
+            onClick={() => changeChatRoom(room)}
+          >
+            # {room.roomName}
+            {/* <Badge
+        style={{ float: "right", marginTop: "4px" }}
+        variant="danger"
+      >
+        {getNotificationCount(room)}
+      </Badge> */}
+          </StChatRoomList>
+        ))}
+      </StChatRoomUL>
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -128,4 +201,23 @@ const StChatRoomInner = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
+`;
+const StChatRoomUL = styled.ul`
+  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+  padding-left: 10px;
+`;
+const StChatRoomList = styled.li`
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.9s;
+  font-size: 14px;
+  font-weight: 700;
+  background-color: ${(props) => (props.active ? "black" : "transparent")};
+  color: ${(props) => (props.active ? "#fff" : "#000")};
+  &:hover {
+    color: white;
+    box-shadow: 376px 0 0 0 #000 inset;
+  }
 `;

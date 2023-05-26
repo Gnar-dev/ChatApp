@@ -28,6 +28,7 @@ export default MainPanel;
 
 const StMainPanelContainer = styled.div`
   padding: 2rem 2rem 0 2rem;
+  position: relative;
 `;
 
 const StInner = styled.div`
