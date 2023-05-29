@@ -23,6 +23,9 @@ const MainPanel = () => {
   const [messages, setMessages] = useState([]);
   const [messagesRef, setMessagesRef] = useState(dbRef(db, "messages"));
   const [messagesLoading, setMessagesLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const addMessageListeners = (chatRoomId) => {
     let messagesArray = [];
@@ -31,16 +34,37 @@ const MainPanel = () => {
     onChildAdded(chatRoomMessagesRef, (snapshot) => {
       const message = snapshot.val();
       messagesArray.push(message);
-      setMessagesRef([...messagesArray]);
+      setMessages([...messagesArray]);
       setMessagesLoading(false);
     });
   };
 
   const renderMessages = (messages) => {
-    messages.length > 0 &&
-      messages.map((message) => {
-        <Message key={message.timestamp} message={message} user={user} />;
-      });
+    return (
+      messages.length > 0 &&
+      messages?.map((message) => (
+        <Message key={message?.timeStamp} message={message} user={user} />
+      ))
+    );
+  };
+  const handleSearchMessage = (messageList, searchTerm) => {
+    const chatRoomMessages = [...messageList];
+    const regex = new RegExp(searchTerm, "gi");
+    const searchResults = chatRoomMessages.reduce((acc, message) => {
+      if (
+        (message.content && message.content.match(regex)) ||
+        message.user.name.match(regex)
+      ) {
+        acc.push(message);
+      }
+      return acc;
+    }, []);
+    setSearchResults(searchResults);
+  };
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setSearchLoading(true);
+    handleSearchMessage(messages, searchTerm);
   };
   useEffect(() => {
     if (chatRoom) {
@@ -48,10 +72,17 @@ const MainPanel = () => {
     }
   }, [chatRoom]);
 
+  useEffect(() => {
+    setSearchLoading(true);
+    handleSearchMessage(messages, searchTerm);
+  }, [searchTerm]);
+
   return (
     <StMainPanelContainer>
-      <MessageHeader />
-      <StInner>{renderMessages}</StInner>
+      <MessageHeader handleSearchChange={handleSearchChange} />
+      <StInner>
+        {searchTerm ? renderMessages(searchResults) : renderMessages(messages)}
+      </StInner>
       <MessageForm />
     </StMainPanelContainer>
   );

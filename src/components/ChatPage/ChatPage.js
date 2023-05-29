@@ -2,14 +2,16 @@ import React from "react";
 import SidePanel from "./SidePanel/SidePanel";
 import MainPanel from "./MainPanel/MainPanel";
 import styled from "styled-components";
+import { useSelector } from "react-redux";
 const ChatPage = () => {
+  const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
   return (
     <StChatPageContainer>
       <StSidePanelContainer>
         <SidePanel />
       </StSidePanelContainer>
       <StMainPanelContainer>
-        <MainPanel />
+        <MainPanel key={chatRoom && chatRoom.id} />
       </StMainPanelContainer>
     </StChatPageContainer>
   );

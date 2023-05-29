@@ -30,11 +30,13 @@ const MessageHeader = ({ handleSearchChange }) => {
   const isPrivateChatRoom = useSelector(
     (state) => state.chatRoom.isPrivateChatRoom
   );
+  console.log(isPrivateChatRoom);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isViewMoreVisible, setIsViewMoreVisible] = useState("false");
   const usersRef = ref(getDatabase(), "users");
   const user = useSelector((state) => state.user.currentUser);
   const userPosts = useSelector((state) => state.chatRoom.userPosts);
+  
   useEffect(() => {
     if (chatRoom && user) {
       addFavoriteListener(chatRoom.id, user.uid);
@@ -128,7 +130,11 @@ const MessageHeader = ({ handleSearchChange }) => {
               <StPrivateIcon>
                 {isPrivateChatRoom ? <FaLock /> : <FaLockOpen />}
               </StPrivateIcon>
-              <StRoomName>{chatRoom && chatRoom.roomName}</StRoomName>
+              <StRoomName>
+                {isPrivateChatRoom
+                  ? chatRoom.name
+                  : chatRoom && chatRoom.roomName}
+              </StRoomName>
               {!isPrivateChatRoom && (
                 <StFavorite onClick={handleFavorite}>
                   {isFavorited ? <MdFavorite /> : <MdFavoriteBorder />}
@@ -146,16 +152,25 @@ const MessageHeader = ({ handleSearchChange }) => {
             }}
           >
             <StCreateInfo>만든이 : </StCreateInfo>
-            {!isPrivateChatRoom && (
+            {!isPrivateChatRoom ? (
               <StCreateUser>
                 <Image
-                  src={chatRoom && chatRoom.createdBy.image}
+                  src={chatRoom?.createdBy.image}
                   roundedCircle
                   style={{ width: "30px", height: "30px" }}
                 />
                 <StCreateName>
                   {chatRoom && chatRoom.createdBy.name}
                 </StCreateName>
+              </StCreateUser>
+            ) : (
+              <StCreateUser>
+                <Image
+                  src={user.photoURL}
+                  roundedCircle
+                  style={{ width: "30px", height: "30px" }}
+                />
+                <StCreateName>{user.displayName}</StCreateName>
               </StCreateUser>
             )}
             <StViewMoreIcon onClick={handleViewMoreClick}>

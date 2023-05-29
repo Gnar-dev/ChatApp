@@ -16,7 +16,10 @@ import {
   update,
   child,
 } from "firebase/database";
-import { setCurrentChatRoom } from "../../../redux/actions/chatRoomAction";
+import {
+  setCurrentChatRoom,
+  setPrivateChatRoom,
+} from "../../../redux/actions/chatRoomAction";
 import { auth } from "../../../firebase";
 
 const ChatRooms = () => {
@@ -122,6 +125,7 @@ const ChatRooms = () => {
       update(userRef, { lastChatRoomId: room.id });
     }
     dispatch(setCurrentChatRoom(room));
+    dispatch(setPrivateChatRoom(false));
     setActiveChatRoomId(room.id);
   };
 
