@@ -30,18 +30,25 @@ const MessageHeader = ({ handleSearchChange }) => {
   const isPrivateChatRoom = useSelector(
     (state) => state.chatRoom.isPrivateChatRoom
   );
-  console.log(isPrivateChatRoom);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isViewMoreVisible, setIsViewMoreVisible] = useState("false");
   const usersRef = ref(getDatabase(), "users");
   const user = useSelector((state) => state.user.currentUser);
   const userPosts = useSelector((state) => state.chatRoom.userPosts);
-  
+  const database = getDatabase();
+  const usersFavoritedRef = chatRoom
+    ? ref(database, `users/${user.uid}/favorited/${chatRoom.id}`)
+    : ref(getDatabase());
+
   useEffect(() => {
     if (chatRoom && user) {
       addFavoriteListener(chatRoom.id, user.uid);
     }
-  }, []);
+    if (!usersFavoritedRef) {
+      return null;
+    }
+    //eslint-disable-next-line
+  }, [chatRoom, user]);
 
   const addFavoriteListener = (chatRoomId, userId) => {
     onValue(child(usersRef, `${userId}/favorited`), (data) => {
@@ -56,21 +63,24 @@ const MessageHeader = ({ handleSearchChange }) => {
   const handleFavorite = () => {
     if (isFavorited) {
       setIsFavorited((prev) => !prev);
-      remove(child(usersRef, `${user.uid}/favorited/${chatRoom.id}`));
+      remove(usersFavoritedRef);
     } else {
       setIsFavorited((prev) => !prev);
-      update(child(usersRef, `${user.uid}/favorited`), {
-        [chatRoom.id]: {
-          name: chatRoom.name,
-          description: chatRoom.description,
-          createdBy: {
-            name: chatRoom.createdBy.name,
-            image: chatRoom.createdBy.image,
-          },
+      const newFavorite = {
+        roomName: chatRoom.roomName,
+        roomDes: chatRoom.roomDes,
+        createdBy: {
+          name: chatRoom.createdBy.name,
+          image: chatRoom.createdBy.image,
         },
+      };
+      update(ref(database, `users/${user.uid}/favorited`), {
+        [chatRoom.id]: newFavorite,
       });
     }
   };
+
+  
 
   const renderUserPosts = (userPosts) =>
     Object.entries(userPosts)
@@ -102,6 +112,7 @@ const MessageHeader = ({ handleSearchChange }) => {
       setIsViewMoreVisible("false");
     }, 500); // 0.5초 후에 setIsViewMoreVisible(false) 호출
   };
+
   return (
     <StMessageHeaderContainer>
       <Container
@@ -131,9 +142,7 @@ const MessageHeader = ({ handleSearchChange }) => {
                 {isPrivateChatRoom ? <FaLock /> : <FaLockOpen />}
               </StPrivateIcon>
               <StRoomName>
-                {isPrivateChatRoom
-                  ? chatRoom.name
-                  : chatRoom && chatRoom.roomName}
+                {isPrivateChatRoom ? chatRoom?.name : chatRoom?.roomName}
               </StRoomName>
               {!isPrivateChatRoom && (
                 <StFavorite onClick={handleFavorite}>
@@ -207,10 +216,14 @@ const MessageHeader = ({ handleSearchChange }) => {
           <div>포스팅한 수</div>
         </div>
         <div>{userPosts && renderUserPosts(userPosts)}</div>
-        <div>
-          <div>채팅방 상세설명</div>
-          <div>{chatRoom && chatRoom.roomDes}</div>
-        </div>
+        <StViewMoreBoxRoomDes>
+          <StViewMoreBoxRoomDesHeader>
+            채팅방 상세설명
+          </StViewMoreBoxRoomDesHeader>
+          <StViewMoreBoxRoomDesBody>
+            {chatRoom && chatRoom.roomDes}
+          </StViewMoreBoxRoomDesBody>
+        </StViewMoreBoxRoomDes>
       </StViewMoreBox>
     </StMessageHeaderContainer>
   );
@@ -315,4 +328,18 @@ const slideOutAnimation = keyframes`
   100% {
     transform: translateX(100%);
   }
+`;
+
+const StViewMoreBoxRoomDes = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const StViewMoreBoxRoomDesHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const StViewMoreBoxRoomDesBody = styled.div`
+  display: flex;
+  flex-direction: column;
 `;

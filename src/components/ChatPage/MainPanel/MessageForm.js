@@ -32,7 +32,9 @@ const MessageForm = () => {
   const inputOpenImageRef = useRef(null);
   const storage = getStorage();
   const [percentage, setPercentage] = useState(0);
-  const isPrivateChaRoom = useSelector((state) => state.isPrivateChaRoom);
+  const isPrivateChatRoom = useSelector(
+    (state) => state.chatRoom.isPrivateChatRoom
+  );
   const createMessage = (fileUrl = null) => {
     const message = {
       timeStamp,
@@ -76,7 +78,7 @@ const MessageForm = () => {
   };
 
   const getPath = () => {
-    if (isPrivateChaRoom) {
+    if (isPrivateChatRoom) {
       return `/message/private/${chatRoom.id}`;
     } else {
       return `/message/public`;
@@ -84,11 +86,9 @@ const MessageForm = () => {
   };
   const handleUploadImage = (e) => {
     const file = e.target.files[0];
-
     const filePath = `${getPath()}/${file.name}`;
     const metaData = { contentType: mime.getType(file.name) };
     setLoading(true);
-
     try {
       const storageRef = strRef(storage, filePath);
       const uploadTask = uploadBytesResumable(storageRef, file, metaData);

@@ -7,12 +7,12 @@ import {
   setCurrentChatRoom,
   setPrivateChatRoom,
 } from "../../../redux/actions/chatRoomAction";
-const DirectMessages = () => {
+const DirectMessages = ({ active, onClick }) => {
   const db = getDatabase();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.currentUser);
   const [users, setUsers] = useState([]);
-  const [activeChatRoom, setActiveChatRoom] = useState(null);
+  const [activeChatRoom, setActiveChatRoom] = useState("");
   useEffect(() => {
     if (currentUser) {
       const usersRef = dbRef(db, "users");
@@ -50,19 +50,21 @@ const DirectMessages = () => {
 
     dispatch(setCurrentChatRoom(chatRoomData));
     dispatch(setPrivateChatRoom(true));
-    setActiveChatRoom(chatRoomId);
+    setActiveChatRoom(user.uid);
   };
 
   const renderDirectMessages = (users) => {
     return (
       users.length > 0 &&
-      users.map((user) => (
+      users?.map((user) => (
         <StDirectMessageUserLi
           key={user.uid}
-          active={
-            getChatRoomId(user.uid) === activeChatRoom ? "true" : undefined
-          }
-          onClick={() => changeChatRoom(user)}
+          active={active && user?.uid === activeChatRoom ? true : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(user);
+            changeChatRoom(user);
+          }}
         >
           # {user.name}
         </StDirectMessageUserLi>
@@ -73,7 +75,7 @@ const DirectMessages = () => {
   return (
     <StDirectMessageContainer>
       <StDirectMessageTitle>
-        <FaRegSmileWink style={{ marginRight: 3 }} />
+        <FaRegSmileWink style={{ marginRight: 10 }} />
         DIRECT MESSAGES ({users.length})
       </StDirectMessageTitle>
       <StDirectMessageUl> {renderDirectMessages(users)}</StDirectMessageUl>
@@ -94,7 +96,6 @@ const StDirectMessageUl = styled.ul`
   list-style: none;
   padding: 0;
   padding-left: 10px;
-  color: black;
 `;
 
 const StDirectMessageUserLi = styled.li`
