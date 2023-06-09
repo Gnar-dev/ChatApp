@@ -7,7 +7,7 @@ import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser,clearUser } from "./redux/actions/userAction.js";
+import { setUser, clearUser } from "./redux/actions/userAction.js";
 
 function App() {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ function App() {
         dispatch(clearUser(user));
       }
     });
+    //eslint-disable-next-line
   }, []);
 
   if (isLoading) {

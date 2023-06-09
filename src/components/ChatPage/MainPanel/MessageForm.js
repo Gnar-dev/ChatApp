@@ -10,6 +10,7 @@ import {
   push,
   child,
   serverTimestamp,
+  remove,
 } from "firebase/database";
 import {
   getStorage,
@@ -31,10 +32,12 @@ const MessageForm = () => {
   const timeStamp = serverTimestamp();
   const inputOpenImageRef = useRef(null);
   const storage = getStorage();
+  const typingRef = ref(db, "typing");
   const [percentage, setPercentage] = useState(0);
   const isPrivateChatRoom = useSelector(
     (state) => state.chatRoom.isPrivateChatRoom
   );
+
   const createMessage = (fileUrl = null) => {
     const message = {
       timeStamp,
@@ -61,6 +64,7 @@ const MessageForm = () => {
     setLoading(true);
     try {
       await set(push(child(messagesRef, chatRoom.id)), createMessage());
+      remove(child(typingRef, `${chatRoom.id}/${user.uid}`));
       setLoading(false);
       setContent("");
       setErrors([]);
@@ -120,6 +124,19 @@ const MessageForm = () => {
       alert(e.message);
     }
   };
+
+  const handleKeyDown = (event) => {
+    if (content) {
+      set(child(typingRef, `${chatRoom.id}/${user.uid}`), user.displayName);
+    }
+    if (!content) {
+      remove(child(typingRef, `${chatRoom.id}/${user.uid}`));
+    }
+    if (event.key === "Enter" && !event.shiftKey) {
+      handleSubmit();
+    }
+  };
+
   return (
     <div>
       <StSendImage
@@ -130,7 +147,7 @@ const MessageForm = () => {
       </StSendImage>
       <StTextAreaContainer>
         <StTextArea
-          //<onKeyDown={handleKeyDown}
+          onKeyDown={handleKeyDown}
           value={content}
           onChange={handleChange}
         ></StTextArea>

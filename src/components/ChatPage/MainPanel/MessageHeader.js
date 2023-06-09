@@ -80,28 +80,23 @@ const MessageHeader = ({ handleSearchChange }) => {
     }
   };
 
-  
-
-  const renderUserPosts = (userPosts) =>
-    Object.entries(userPosts)
+  const renderUserPosts = (userPosts) => {
+    return Object.entries(userPosts)
       .sort((a, b) => b[1].count - a[1].count)
       .map(([key, val], i) => (
-        <div key={i} style={{ display: "flex" }}>
-          <img
-            style={{ borderRadius: 25 }}
-            width={48}
-            height={48}
-            className="mr-3"
-            src={val.image}
-            alt={val.name}
-          />
-          <div>
-            <h6>{key}</h6>
-            <p>{val.count} 개</p>
-          </div>
-        </div>
+        <StViewMoreBoxReviewPostBox key={i}>
+          <StViewMoreBoxReviewPostBoxImg src={val.image} alt={val.name} />
+          <StViewMoreBoxReviewPostBoxDescription>
+            <StViewMoreBoxReviewPostBoxDescriptionName>
+              {key}
+            </StViewMoreBoxReviewPostBoxDescriptionName>
+            <StViewMoreBoxReviewPostBoxDescriptionCount>
+              {val.count} 개
+            </StViewMoreBoxReviewPostBoxDescriptionCount>
+          </StViewMoreBoxReviewPostBoxDescription>
+        </StViewMoreBoxReviewPostBox>
       ));
-
+  };
   const handleViewMoreClick = () => {
     setIsViewMoreVisible("true");
   };
@@ -212,10 +207,14 @@ const MessageHeader = ({ handleSearchChange }) => {
         <StGobackIcon onClick={handleGoBackClick}>
           <MdOutlineKeyboardDoubleArrowRight size="32" />
         </StGobackIcon>
-        <div>
-          <div>포스팅한 수</div>
-        </div>
-        <div>{userPosts && renderUserPosts(userPosts)}</div>
+        <StViewMorePostCountBox>
+          <StViewMorePostCountBoxHeader>
+            포스팅한 수
+          </StViewMorePostCountBoxHeader>
+          <StViewMorePostCountBoxBody>
+            {userPosts && renderUserPosts(userPosts)}
+          </StViewMorePostCountBoxBody>
+        </StViewMorePostCountBox>
         <StViewMoreBoxRoomDes>
           <StViewMoreBoxRoomDesHeader>
             채팅방 상세설명
@@ -313,33 +312,71 @@ const StGobackIcon = styled.div`
 
 //애니메이션
 const slideInAnimation = keyframes`
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-`;
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  `;
 
 const slideOutAnimation = keyframes`
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  `;
+const StViewMorePostCountBox = styled.div`
+  border: 2px solid black;
+  padding: 5%;
+  border-radius: 20px;
+`;
+const StViewMorePostCountBoxHeader = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 1rem;
 `;
 
+const StViewMorePostCountBoxBody = styled.div``;
 const StViewMoreBoxRoomDes = styled.div`
   display: flex;
   flex-direction: column;
+  border: 2px solid black;
+  padding: 5%;
+  border-radius: 20px;
 `;
 
 const StViewMoreBoxRoomDesHeader = styled.div`
   display: flex;
   flex-direction: column;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 1rem;
 `;
 const StViewMoreBoxRoomDesBody = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
+const StViewMoreBoxReviewPostBox = styled.div`
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const StViewMoreBoxReviewPostBoxImg = styled.img`
+  border-radius: 24px;
+  width: 40px;
+  height: 40px;
+`;
+
+const StViewMoreBoxReviewPostBoxDescription = styled.div``;
+
+const StViewMoreBoxReviewPostBoxDescriptionName = styled.div`
+  font-weight: 700;
+`;
+
+const StViewMoreBoxReviewPostBoxDescriptionCount = styled.div``;

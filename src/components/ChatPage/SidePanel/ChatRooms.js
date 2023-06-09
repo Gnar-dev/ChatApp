@@ -22,19 +22,21 @@ import {
   setPrivateChatRoom,
 } from "../../../redux/actions/chatRoomAction";
 import { auth } from "../../../firebase";
+import { setUserPosts } from "../../../redux/actions/chatRoomAction";
 
 const ChatRooms = ({ active, onClick }) => {
   //리덕스 이용
 
   const user = useSelector((state) => state.user.currentUser);
   const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
+  const userPosts = useSelector((state) => state.chatRoom.userPosts);
   const dispatch = useDispatch();
 
   //state 관리
   const [show, setShow] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [roomDes, setRoomDes] = useState("");
-    //eslint-disable-next-line
+  //eslint-disable-next-line
   const [chatRoomsRef, setChatRoomsRef] = useState(
     dbRef(getDatabase(), "chatRooms")
   );
@@ -43,7 +45,7 @@ const ChatRooms = ({ active, onClick }) => {
   // );
   const messagesRef = dbRef(getDatabase(), "messages");
   const [chatRooms, setChatRooms] = useState([]);
-    //eslint-disable-next-line
+  //eslint-disable-next-line
   const [firstLoad, setFirstLoad] = useState(true);
   const [activeChatRoomId, setActiveChatRoomId] = useState("");
   const [notifications, setNotifications] = useState([]);
@@ -82,6 +84,7 @@ const ChatRooms = ({ active, onClick }) => {
     e.preventDefault();
     if (setRoomName && setRoomDes) {
       addChatRoomFunction();
+      resetUserPosts();
     }
   };
 
@@ -107,6 +110,9 @@ const ChatRooms = ({ active, onClick }) => {
     }
   };
 
+  const resetUserPosts = () => {
+    dispatch(setUserPosts(""));
+  };
   const addChatRoomsListeners = () => {
     let chatRoomsArray = [];
 
@@ -114,6 +120,10 @@ const ChatRooms = ({ active, onClick }) => {
       chatRoomsArray.push(dataSnapshot.val());
       setChatRooms(chatRoomsArray);
       addNotificationListener(dataSnapshot.key);
+    });
+
+    chatRoomsArray.forEach((chatRoom) => {
+      addNotificationListener(chatRoom.id);
     });
   };
 

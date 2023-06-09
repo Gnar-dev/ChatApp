@@ -11,10 +11,10 @@ import {
   ref as dbRef,
   onChildRemoved,
   child,
-  onChild 
+  remove,
 } from "firebase/database";
-import Skeleton from '../../../commons/components/Skeleton';
-import { setUserPosts } from '../../../redux/actions/chatRoomAction';
+import Skeleton from "../../../commons/components/Skeleton";
+import { setUserPosts } from "../../../redux/actions/chatRoomAction";
 
 const MainPanel = () => {
   const messageEndRef = useRef();
@@ -95,30 +95,29 @@ const MainPanel = () => {
   };
 
   const addTypingListeners = (chatRoomId) => {
-    let typingUsers = [];
+    const typingUsersRef = child(typingRef, chatRoomId);
 
-    onChildAdded(child(typingRef, chatRoomId), (DataSnapshot) => {
-      if (DataSnapshot.key !== user.uid) {
-        typingUsers = typingUsers.concat({
-          id: DataSnapshot.key,
-          name: DataSnapshot.val(),
-        });
-        setTypingUsers(typingUsers);
+    onChildAdded(typingUsersRef, (snapshot) => {
+      if (snapshot.key !== user.uid) {
+        const newUser = {
+          id: snapshot.key,
+          displayName: snapshot.val(),
+        };
+        // 중복 체크
+        const isUserExist = typingUsers.some((user) => user.id === newUser.id);
+        if (!isUserExist) {
+          setTypingUsers((prevTypingUsers) => [...prevTypingUsers, newUser]);
+        }
       }
     });
 
     addToListenerLists(chatRoomId, typingRef, "child_added");
 
-    onChildRemoved(child(typingRef, chatRoomId), (DataSnapshot) => {
-      const index = typingUsers.findIndex(
-        (user) => user.id === DataSnapshot.key
+    onChildRemoved(typingUsersRef, (snapshot) => {
+      const removedUserId = snapshot.key;
+      setTypingUsers((prevTypingUsers) =>
+        prevTypingUsers.filter((user) => user.id !== removedUserId)
       );
-      if (index !== -1) {
-        typingUsers = typingUsers.filter(
-          (user) => user.id !== DataSnapshot.key
-        );
-        setTypingUsers(typingUsers);
-      }
     });
 
     addToListenerLists(chatRoomId, typingRef, "child_removed");
@@ -141,19 +140,32 @@ const MainPanel = () => {
   };
 
   const renderTypingUsers = (typingUsers) => {
-    return (
-      typingUsers.length > 0 &&
-      typingUsers.map((user) => (
-        <span>{user.name.userUid}님이 채팅을 입력하고 있습니다...</span>
-      ))
-    );
+    if (typingUsers.length > 1) {
+      const otherUsersCount = typingUsers.length - 1;
+      return (
+        <>
+          <StTypingUserInfo>
+            {typingUsers[0].displayName}님 외 {otherUsersCount}명이 채팅을
+            입력하고 있습니다...
+          </StTypingUserInfo>
+        </>
+      );
+    } else if (typingUsers.length === 1) {
+      return (
+        <StTypingUserInfo>
+          {typingUsers[0].displayName}님이 채팅을 입력하고 있습니다...
+        </StTypingUserInfo>
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderMessageSkeleton = (loading) => {
     return (
       loading && (
         <>
-          {[...Array(10)].map((v, i) => (
+          {[...Array(5)].map((v, i) => (
             <Skeleton key={i} />
           ))}
         </>
@@ -169,6 +181,8 @@ const MainPanel = () => {
     return () => {
       off(messagesRef);
       removeListeners(listenerLists);
+      remove(typingRef);
+      dispatch(setUserPosts(""));
     };
     //eslint-disable-next-line
   }, [chatRoom]);
@@ -182,15 +196,18 @@ const MainPanel = () => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  });
 
   return (
     <StMainPanelContainer>
       <MessageHeader handleSearchChange={handleSearchChange} />
       <StInner>
-        {renderMessageSkeleton(messagesLoading)}
+        {renderMessages(messages).length > 0
+          ? renderMessageSkeleton(messagesLoading)
+          : null}
         {searchTerm ? renderMessages(searchResults) : renderMessages(messages)}
         {renderTypingUsers(typingUsers)}
+        <div ref={messageEndRef} />
       </StInner>
       <MessageForm />
     </StMainPanelContainer>
@@ -212,4 +229,12 @@ const StInner = styled.div`
   border-radius: 4px;
   padding: 1rem;
   margin-bottom: 1rem;
+  position: relative;
+  overflow: auto;
+`;
+
+const StTypingUserInfo = styled.div`
+  margin-top: 1rem;
+  color: #ccc;
+  font-weight: bold;
 `;
