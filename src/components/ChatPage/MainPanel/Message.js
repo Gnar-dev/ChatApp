@@ -3,8 +3,7 @@ import moment from "moment";
 import styled from "styled-components";
 
 function Message({ message, user }) {
-  const timeFromNow = (timestamp) => moment(timestamp).fromNow();
-
+  const timeFromNow = (timeStamp) => moment(timeStamp).fromNow();
   const isImage = (message) => {
     return (
       message.hasOwnProperty("image") && !message.hasOwnProperty("content")
@@ -22,7 +21,7 @@ function Message({ message, user }) {
       <StMsgBody ismine={+isMessageMine(message, user)}>
         <StMsgHeader>
           <StUserName>{message.user.name}</StUserName>
-          <StTimeStamp>{timeFromNow(message.timestamp)}</StTimeStamp>
+          <StTimeStamp>{timeFromNow(message.timeStamp)}</StTimeStamp>
         </StMsgHeader>
 
         {isImage(message) ? (

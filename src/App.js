@@ -8,6 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, clearUser } from "./redux/actions/userAction.js";
+import LoadingPage from "./commons/components/LoadingPage";
 
 function App() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function App() {
   }, []);
 
   if (isLoading) {
-    return <div>...loading</div>;
+    return <LoadingPage />;
   } else {
     return (
       <Routes>

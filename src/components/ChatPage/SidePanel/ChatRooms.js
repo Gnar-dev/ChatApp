@@ -159,7 +159,6 @@ const ChatRooms = ({ active, onClick }) => {
       });
     });
   };
-
   const loadLastChatRoom = () => {
     const userId = auth.currentUser?.uid;
     if (userId) {

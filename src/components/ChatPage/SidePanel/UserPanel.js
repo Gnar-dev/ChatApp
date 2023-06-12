@@ -38,10 +38,8 @@ const UserPanel = () => {
 
       // 파일을 저장할 위치에 대한 참조 생성
       const storageRefData = storageRef(storage, `user_image/${user.uid}`);
-
       // 파일 업로드 작업 생성
       const uploadTask = uploadBytesResumable(storageRefData, file, metadata);
-
       // 업로드가 완료될 때까지 대기하고 스냅샷 가져오기
       const uploadTaskSnapshot = await uploadTask;
 
@@ -53,12 +51,12 @@ const UserPanel = () => {
         photoURL: downloadURL,
       });
 
-      dispatch(setPhotoUrl(downloadURL));
-
       //데이터베이스 유저 이미지 수정
       await update(dbRef(getDatabase(), `users/${user.uid}`), {
         image: downloadURL,
       });
+
+      dispatch(setPhotoUrl(downloadURL));
     } catch (error) {
       alert(error.message);
     }
