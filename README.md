@@ -16,7 +16,11 @@
 #### 6. 새로운 메세지 알림 및 갯수 확인 기능
 #### 7. 채팅방 즐겨찾기 기능
 
-
+<img width="700" alt="authentication" src="https://github.com/Gnar-dev/ChatApp/assets/121690671/e9a37e4a-35d4-4b1f-8daf-92fa52670cd9">
+<img width="700" alt="chatdetail" src="https://github.com/Gnar-dev/ChatApp/assets/121690671/dfc16801-746c-4a8b-bd48-8a32d71ed1d0">
+<img width="700" alt="chatmain" src="https://github.com/Gnar-dev/ChatApp/assets/121690671/948c15c5-835c-4b51-8435-19e20fd557cc">
+<img width="700" alt="dmimg" src="https://github.com/Gnar-dev/ChatApp/assets/121690671/280cc78e-33fd-42d0-bf07-dcffc2e5d751">
+<img width="700" alt="realtime database" src="https://github.com/Gnar-dev/ChatApp/assets/121690671/8d4d17e8-b93e-4b16-b495-c154fbb042a8">
 ---
 
 ## ✨ 기술스택 
